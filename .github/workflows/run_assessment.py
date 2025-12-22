@@ -67,6 +67,13 @@ async def run_assessment(green_agent_url: str, solver_url: str, metadata: dict):
                 if isinstance(part.root, DataPart):
                     results = part.root.data
                     break
+                elif isinstance(part.root, TextPart):
+                    # Try to parse text as JSON
+                    try:
+                        results = json.loads(part.root.text)
+                        break
+                    except:
+                        pass
         elif isinstance(last_event, tuple):
             # Task response
             task, update = last_event
@@ -79,17 +86,47 @@ async def run_assessment(green_agent_url: str, solver_url: str, metadata: dict):
                             if isinstance(part.root, DataPart):
                                 results = part.root.data
                                 break
+                            elif isinstance(part.root, TextPart):
+                                try:
+                                    results = json.loads(part.root.text)
+                                    break
+                                except:
+                                    pass
             
-            # If no artifacts, check message
-            if not results and task.status.message:
+            # If no artifacts, check status message
+            if not results and task.status and task.status.message:
                 for part in task.status.message.parts:
                     if isinstance(part.root, DataPart):
                         results = part.root.data
                         break
+                    elif isinstance(part.root, TextPart):
+                        try:
+                            results = json.loads(part.root.text)
+                            break
+                        except:
+                            pass
+            
+            # If still no results, check history messages
+            if not results and task.history:
+                for msg in reversed(task.history):
+                    for part in msg.parts:
+                        if isinstance(part.root, DataPart):
+                            results = part.root.data
+                            break
+                        elif isinstance(part.root, TextPart):
+                            try:
+                                results = json.loads(part.root.text)
+                                break
+                            except:
+                                pass
+                    if results:
+                        break
         
         if not results:
             print("ERROR: Could not extract evaluation results from response", file=sys.stderr)
-            print(f"Response: {last_event}", file=sys.stderr)
+            print(f"Task status: {last_event[0].status if isinstance(last_event, tuple) else 'N/A'}", file=sys.stderr)
+            print(f"Task artifacts: {last_event[0].artifacts if isinstance(last_event, tuple) else 'N/A'}", file=sys.stderr)
+            print(f"Response type: {type(last_event)}", file=sys.stderr)
             sys.exit(1)
         
         return results
