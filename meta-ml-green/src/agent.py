@@ -84,12 +84,13 @@ class Agent:
         try:
             # Create task message for purple agent
             task_message = Message(
+                kind="message",
                 message_id="eval_task",
                 role="user",
                 parts=[
-                    Part(root=TextPart(text=f"Train a model: {task_desc}")),
-                    Part(root=DataPart(data={"filename": "train.csv", "content": train_csv})),
-                    Part(root=DataPart(data={"filename": "test.csv", "content": test_csv}))
+                    Part(root=TextPart(kind="text", text=f"Train a model: {task_desc}")),
+                    Part(root=DataPart(kind="data", data={"filename": "train.csv", "content": train_csv})),
+                    Part(root=DataPart(kind="data", data={"filename": "test.csv", "content": test_csv}))
                 ],
                 metadata={
                     "task_description": task_desc,
