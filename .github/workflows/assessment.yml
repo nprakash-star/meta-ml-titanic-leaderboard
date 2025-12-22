@@ -55,112 +55,27 @@ jobs:
           echo "Waiting for green agent to start..."
           sleep 10
       
+      - name: Install A2A SDK
+        run: |
+          pip install httpx "a2a-sdk[http-server]"
+      
       - name: Run Assessment via A2A Protocol
         id: assessment
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           mkdir -p results
           
-          # Create A2A JSON-RPC request for green agent
-          cat > a2a_request.json << 'EOFMSG'
-          {
-            "jsonrpc": "2.0",
-            "method": "agent.execute",
-            "id": 1,
-            "params": {
-              "message": {
-                "role": "user",
-                "parts": [
-                  {
-                    "text": "Please evaluate the solver agent on Titanic survival prediction"
-                  }
-                ],
-                "metadata": {
-                  "agent_url": "http://solver:9009",
-                  "train_data_url": "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_train_80.csv",
-                  "test_data_url": "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_test_20_features.csv",
-                  "test_labels_url": "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_test_20_labels.csv",
-                  "target_column": "Survived",
-                  "task_description": "Predict Titanic passenger survival based on demographics and ticket information"
-                }
-              }
-            }
-          }
-          EOFMSG
+          # Make script executable
+          chmod +x .github/workflows/run_assessment.py
           
-          # Send request to green agent and capture response
-          curl -X POST http://localhost:9010/ \
-            -H "Content-Type: application/json" \
-            -d @a2a_request.json \
-            -o results/raw_response_${TIMESTAMP}.json \
-            -w "%{http_code}" > results/http_status.txt
+          # Run assessment using Python A2A SDK
+          python3 .github/workflows/run_assessment.py results/result_${TIMESTAMP}.json
           
-          # Check if request succeeded
-          HTTP_STATUS=$(cat results/http_status.txt)
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "Assessment failed with HTTP status: $HTTP_STATUS"
-            cat results/raw_response_${TIMESTAMP}.json
-            exit 1
-          fi
+          # Replace placeholders in result file
+          sed -i "s/\${GITHUB_SHA}/${{ github.sha }}/g" results/result_${TIMESTAMP}.json
+          sed -i "s/\${GITHUB_RUN_ID}/${{ github.run_id }}/g" results/result_${TIMESTAMP}.json
           
           echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
-      
-      - name: Extract and Format Results
-        run: |
-          TIMESTAMP="${{ steps.assessment.outputs.timestamp }}"
-          
-          # Extract evaluation_results artifact from A2A response
-          # The green agent returns results in an artifact named "evaluation_results"
-          python3 << 'EOFPY'
-          import json
-          import sys
-          from datetime import datetime
-          
-          # Read raw A2A response
-          with open('results/raw_response_${{ steps.assessment.outputs.timestamp }}.json', 'r') as f:
-              response = json.load(f)
-          
-          # Extract evaluation results from artifacts
-          eval_results = None
-          if 'artifacts' in response:
-              for artifact in response['artifacts']:
-                  if artifact.get('name') == 'evaluation_results':
-                      # Extract the data from the artifact
-                      if 'parts' in artifact:
-                          for part in artifact['parts']:
-                              if 'data' in part:
-                                  eval_results = part['data']
-                                  break
-                              elif 'root' in part and 'data' in part['root']:
-                                  eval_results = part['root']['data']
-                                  break
-          
-          if not eval_results:
-              print("ERROR: Could not find evaluation_results in response", file=sys.stderr)
-              print("Response:", json.dumps(response, indent=2), file=sys.stderr)
-              sys.exit(1)
-          
-          # Format for AgentBeats
-          agentbeats_result = {
-              "participants": {
-                  "agent": "019b4528-623c-7202-97d8-33bb09081a86"
-              },
-              "timestamp": datetime.utcnow().isoformat() + "Z",
-              "commit": "${{ github.sha }}",
-              "run_id": "${{ github.run_id }}",
-              "results": [eval_results]
-          }
-          
-          # Save formatted result
-          with open('results/result_${{ steps.assessment.outputs.timestamp }}.json', 'w') as f:
-              json.dump(agentbeats_result, f, indent=2)
-          
-          print(f"✓ Successfully extracted and formatted results")
-          print(f"  Accuracy: {eval_results['performance']['accuracy']:.2%}")
-          print(f"  F1 Score: {eval_results['performance']['f1_score']:.3f}")
-          print(f"  Research Score: {eval_results['research']['score']}/100")
-          print(f"  Overall Score: {eval_results['overall_score']:.3f}")
-          EOFPY
       
       - name: Commit results
         run: |
