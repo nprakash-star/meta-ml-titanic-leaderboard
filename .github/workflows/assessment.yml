@@ -24,8 +24,8 @@ jobs:
       
       - name: Pull Docker images
         run: |
-          docker pull ghcr.io/nprakash-star/meta-ml-solver:latest
-          docker pull ghcr.io/nprakash-star/meta-ml-green:latest
+          docker pull --no-cache ghcr.io/nprakash-star/meta-ml-solver:latest
+          docker pull --no-cache ghcr.io/nprakash-star/meta-ml-green:latest
       
       - name: Create Docker network
         run: docker network create assessment-network
