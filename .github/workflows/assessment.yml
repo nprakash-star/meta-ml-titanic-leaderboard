@@ -61,30 +61,35 @@ jobs:
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           mkdir -p results
           
-          # Create A2A message for green agent
+          # Create A2A JSON-RPC request for green agent
           cat > a2a_request.json << 'EOFMSG'
           {
-            "message": {
-              "role": "user",
-              "parts": [
-                {
-                  "text": "Please evaluate the solver agent on Titanic survival prediction"
+            "jsonrpc": "2.0",
+            "method": "agent.execute",
+            "id": 1,
+            "params": {
+              "message": {
+                "role": "user",
+                "parts": [
+                  {
+                    "text": "Please evaluate the solver agent on Titanic survival prediction"
+                  }
+                ],
+                "metadata": {
+                  "agent_url": "http://solver:9009",
+                  "train_data_url": "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_train_80.csv",
+                  "test_data_url": "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_test_20_features.csv",
+                  "test_labels_url": "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_test_20_labels.csv",
+                  "target_column": "Survived",
+                  "task_description": "Predict Titanic passenger survival based on demographics and ticket information"
                 }
-              ],
-              "metadata": {
-                "agent_url": "http://solver:9009",
-                "train_data_url": "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_train_80.csv",
-                "test_data_url": "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_test_20_features.csv",
-                "test_labels_url": "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_test_20_labels.csv",
-                "target_column": "Survived",
-                "task_description": "Predict Titanic passenger survival based on demographics and ticket information"
               }
             }
           }
           EOFMSG
           
           # Send request to green agent and capture response
-          curl -X POST http://localhost:9010/tasks \
+          curl -X POST http://localhost:9010/ \
             -H "Content-Type: application/json" \
             -d @a2a_request.json \
             -o results/raw_response_${TIMESTAMP}.json \
