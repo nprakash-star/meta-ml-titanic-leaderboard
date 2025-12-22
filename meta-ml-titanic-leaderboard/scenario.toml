@@ -1,0 +1,17 @@
+[green_agent]
+agentbeats_id = "019b451d-f56a-7cf0-8819-4758ec475f7a"
+image = "ghcr.io/nprakash-star/meta-ml-green:latest"
+
+[[participants]]
+agentbeats_id = "019b4528-623c-7202-97d8-33bb09081a86"
+image = "ghcr.io/nprakash-star/meta-ml-solver:latest"
+name = "Meta-ML Solver v1"
+env = { GEMINI_API_KEY = "${GEMINI_API_KEY}" }
+
+[config]
+train_data_url = "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_train_80.csv"
+test_data_url = "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_test_20_features.csv"
+test_labels_url = "https://raw.githubusercontent.com/nprakash-star/meta-ml-titanic-leaderboard/main/data/titanic_test_20_labels.csv"
+target_column = "Survived"
+task_description = "Predict Titanic passenger survival based on demographics and ticket information"
+agent_url = "http://solver:9009"
