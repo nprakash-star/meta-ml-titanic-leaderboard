@@ -84,7 +84,7 @@ jobs:
           EOFMSG
           
           # Send request to green agent and capture response
-          curl -X POST http://localhost:9010/agent \
+          curl -X POST http://localhost:9010/tasks \
             -H "Content-Type: application/json" \
             -d @a2a_request.json \
             -o results/raw_response_${TIMESTAMP}.json \
