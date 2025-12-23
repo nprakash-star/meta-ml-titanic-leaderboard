@@ -82,22 +82,24 @@ class Agent:
         )
         
         try:
-            # Encode CSVs as base64 to put in metadata (workaround for A2A SDK stripping DataParts)
-            import base64
-            train_csv_b64 = base64.b64encode(train_csv.encode()).decode()
-            test_csv_b64 = base64.b64encode(test_csv.encode()).decode()
+            # Embed CSVs directly in text (metadata size limits prevent base64)
+            import json
+            csv_data = {
+                "task": task_desc,
+                "target_column": target_col,
+                "train_csv": train_csv,
+                "test_csv": test_csv
+            }
             
             # Create task message for purple agent
             task_message = Message(
                 kind="message",
                 message_id="eval_task",
                 role="user",
-                parts=[Part(root=TextPart(kind="text", text=f"Train a model: {task_desc}"))],
+                parts=[Part(root=TextPart(kind="text", text=f"TRAINING_DATA:{json.dumps(csv_data)}"))],
                 metadata={
                     "task_description": task_desc,
-                    "target_column": target_col,
-                    "train_csv_base64": train_csv_b64,
-                    "test_csv_base64": test_csv_b64
+                    "target_column": target_col
                 }
             )
             
