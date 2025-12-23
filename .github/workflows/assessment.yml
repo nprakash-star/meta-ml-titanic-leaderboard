@@ -24,9 +24,10 @@ jobs:
       
       - name: Pull Docker images
         run: |
-          # Pull fresh images (use --pull=always to bypass cache)
+          # Pull v2 image to ensure latest code
+          docker pull ghcr.io/nprakash-star/meta-ml-green:v2
+          docker tag ghcr.io/nprakash-star/meta-ml-green:v2 ghcr.io/nprakash-star/meta-ml-green:latest
           docker pull ghcr.io/nprakash-star/meta-ml-solver:latest
-          docker pull ghcr.io/nprakash-star/meta-ml-green:latest
       
       - name: Create Docker network
         run: docker network create assessment-network
