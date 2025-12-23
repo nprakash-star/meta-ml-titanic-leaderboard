@@ -123,8 +123,7 @@ class Agent:
             # Send research artifact
             await updater.add_artifact(
                 parts=[Part(root=TextPart(text=result['research']))],
-                name="research_report",
-                description="Research findings from Gemini + Google Search"
+                name="research_report"
             )
             
             # Send predictions
@@ -132,8 +131,7 @@ class Agent:
                 predictions_csv = "prediction\n" + "\n".join(str(p) for p in result['predictions'])
                 await updater.add_artifact(
                     parts=[Part(root=TextPart(text=predictions_csv))],
-                    name="predictions",
-                    description="Model predictions"
+                    name="predictions"
                 )
             
             # Send metadata
@@ -143,8 +141,7 @@ class Agent:
                     "validation_report": result['validation_report'],
                     "problem_type": result['problem_type']
                 }))],
-                name="model_info",
-                description="Training metadata"
+                name="model_info"
             )
             
             await updater.complete(
