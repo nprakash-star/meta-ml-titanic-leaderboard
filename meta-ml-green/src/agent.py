@@ -98,11 +98,26 @@ class Agent:
                 }
             )
             
-            # Send to purple agent
-            response = await self.messenger.talk_to_agent(
-                message=task_message,
-                url=purple_agent_url
-            )
+            # Send to purple agent directly using HTTP client
+            import httpx
+            from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
+            
+            async with httpx.AsyncClient(timeout=600) as httpx_client:
+                resolver = A2ACardResolver(httpx_client=httpx_client, base_url=purple_agent_url)
+                agent_card = await resolver.get_agent_card()
+                config = ClientConfig(httpx_client=httpx_client, streaming=False)
+                factory = ClientFactory(config)
+                client = factory.create(agent_card)
+                
+                last_event = None
+                async for event in client.send_message(task_message):
+                    last_event = event
+                
+                # Extract response
+                if isinstance(last_event, tuple):
+                    response, _ = last_event
+                else:
+                    response = last_event
             
             # Extract predictions and research from response
             predictions_text = None
