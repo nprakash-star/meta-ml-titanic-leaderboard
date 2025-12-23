@@ -53,6 +53,7 @@ jobs:
             --name green-agent \
             --network assessment-network \
             -p 9010:9009 \
+            -e AGENT_URL="http://localhost:9010/" \
             ghcr.io/nprakash-star/meta-ml-green:latest
           echo "Waiting for green agent to start..."
           sleep 10
