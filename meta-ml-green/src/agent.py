@@ -190,8 +190,7 @@ class Agent:
             # Send results
             await updater.add_artifact(
                 parts=[Part(root=DataPart(data=eval_results))],
-                name="evaluation_results",
-                description="Complete evaluation results"
+                name="evaluation_results"
             )
             
             await updater.complete(

@@ -24,9 +24,9 @@ jobs:
       
       - name: Pull Docker images
         run: |
-          # Pull v6 image (fixed response.artifacts handling)
-          docker pull ghcr.io/nprakash-star/meta-ml-green:v6
-          docker tag ghcr.io/nprakash-star/meta-ml-green:v6 ghcr.io/nprakash-star/meta-ml-green:latest
+          # Pull v7 image (fixed add_artifact API calls)
+          docker pull ghcr.io/nprakash-star/meta-ml-green:v7
+          docker tag ghcr.io/nprakash-star/meta-ml-green:v7 ghcr.io/nprakash-star/meta-ml-green:latest
           docker pull ghcr.io/nprakash-star/meta-ml-solver:latest
       
       - name: Create Docker network
