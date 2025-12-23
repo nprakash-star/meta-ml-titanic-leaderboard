@@ -24,9 +24,9 @@ jobs:
       
       - name: Pull Docker images
         run: |
-          # Pull v3 image (built with --no-cache for fresh code)
-          docker pull ghcr.io/nprakash-star/meta-ml-green:v3
-          docker tag ghcr.io/nprakash-star/meta-ml-green:v3 ghcr.io/nprakash-star/meta-ml-green:latest
+          # Pull v4 image (base64 encoded CSVs in metadata)
+          docker pull ghcr.io/nprakash-star/meta-ml-green:v4
+          docker tag ghcr.io/nprakash-star/meta-ml-green:v4 ghcr.io/nprakash-star/meta-ml-green:latest
           docker pull ghcr.io/nprakash-star/meta-ml-solver:latest
       
       - name: Create Docker network

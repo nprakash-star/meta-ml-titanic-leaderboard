@@ -51,31 +51,26 @@ class Agent:
         # Parse task
         task_desc = "Train a machine learning model on the provided data"
         target_col = None
+        train_df = None
+        test_df = None
         
         if hasattr(message, 'metadata') and message.metadata:
             task_desc = message.metadata.get('task_description', task_desc)
             target_col = message.metadata.get('target_column')
-        
-        # Extract datasets from message parts
-        train_df = None
-        test_df = None
-        
-        for part in message.parts:
-            p = part.root if hasattr(part, 'root') else part
             
-            if isinstance(p, DataPart) and hasattr(p, 'data'):
-                data = p.data
-                if 'filename' in data and 'content' in data:
-                    filename = data['filename']
-                    content = data['content']
-                    
-                    # Parse CSV
-                    df = pd.read_csv(io.StringIO(content))
-                    
-                    if 'train' in filename.lower():
-                        train_df = df
-                    elif 'test' in filename.lower() and 'label' not in filename.lower():
-                        test_df = df
+            # Try to get CSV data from metadata (base64 encoded)
+            train_csv_b64 = message.metadata.get('train_csv_base64')
+            test_csv_b64 = message.metadata.get('test_csv_base64')
+            
+            if train_csv_b64:
+                import base64
+                train_csv = base64.b64decode(train_csv_b64).decode()
+                train_df = pd.read_csv(io.StringIO(train_csv))
+            
+            if test_csv_b64:
+                import base64
+                test_csv = base64.b64decode(test_csv_b64).decode()
+                test_df = pd.read_csv(io.StringIO(test_csv))
         
         if train_df is None:
             await updater.failed(new_agent_text_message(f"No training data provided. DEBUG: {json.dumps(debug_info, indent=2)}"))
