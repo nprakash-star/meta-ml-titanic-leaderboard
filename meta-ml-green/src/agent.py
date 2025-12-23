@@ -128,7 +128,7 @@ class Agent:
             predictions_text = None
             research_text = ""
             
-            if hasattr(response, 'artifacts'):
+            if response and hasattr(response, 'artifacts') and response.artifacts:
                 for artifact in response.artifacts:
                     if artifact.name == "predictions":
                         predictions_text = self._extract_text(artifact)
@@ -136,7 +136,7 @@ class Agent:
                         research_text = self._extract_text(artifact)
             
             if not predictions_text:
-                await updater.failed(new_agent_text_message("Purple agent did not return predictions"))
+                await updater.failed(new_agent_text_message(f"Purple agent did not return predictions. Response: {response}"))
                 return
             
         except Exception as e:
