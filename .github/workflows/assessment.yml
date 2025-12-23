@@ -71,18 +71,23 @@ jobs:
           chmod +x .github/workflows/run_assessment.py
           
           # Show what image version green agent is using
+          echo "=== GREEN AGENT STARTUP ==="
           docker logs green-agent 2>&1 | head -20 || true
           
-          # Run assessment using Python A2A SDK
+          # Run assessment using Python A2A SDK (save exit code)
+          set +e
           python3 .github/workflows/run_assessment.py results/result_${TIMESTAMP}.json
+          EXIT_CODE=$?
+          set -e
           
-          # If failed, show green agent logs
-          if [ $? -ne 0 ]; then
-            echo "=== GREEN AGENT LOGS ==="
-            docker logs green-agent 2>&1 | tail -100
-            echo "=== SOLVER LOGS ==="
-            docker logs solver 2>&1 | tail -100
-          fi
+          # Always show logs
+          echo "=== GREEN AGENT FULL LOGS ==="
+          docker logs green-agent 2>&1
+          echo "=== SOLVER FULL LOGS ==="
+          docker logs solver 2>&1
+          
+          # Exit with original code
+          exit $EXIT_CODE
           
           # Replace placeholders in result file
           sed -i "s/\${GITHUB_SHA}/${{ github.sha }}/g" results/result_${TIMESTAMP}.json
