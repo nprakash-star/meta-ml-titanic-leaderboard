@@ -70,8 +70,19 @@ jobs:
           # Make script executable
           chmod +x .github/workflows/run_assessment.py
           
+          # Show what image version green agent is using
+          docker logs green-agent 2>&1 | head -20 || true
+          
           # Run assessment using Python A2A SDK
           python3 .github/workflows/run_assessment.py results/result_${TIMESTAMP}.json
+          
+          # If failed, show green agent logs
+          if [ $? -ne 0 ]; then
+            echo "=== GREEN AGENT LOGS ==="
+            docker logs green-agent 2>&1 | tail -100
+            echo "=== SOLVER LOGS ==="
+            docker logs solver 2>&1 | tail -100
+          fi
           
           # Replace placeholders in result file
           sed -i "s/\${GITHUB_SHA}/${{ github.sha }}/g" results/result_${TIMESTAMP}.json
