@@ -27,9 +27,13 @@ jobs:
           # Remove any cached images first
           docker rmi ghcr.io/nprakash-star/meta-ml-solver:latest || true
           docker rmi ghcr.io/nprakash-star/meta-ml-green:latest || true
-          # Pull fresh images
-          docker pull ghcr.io/nprakash-star/meta-ml-solver:latest
-          docker pull ghcr.io/nprakash-star/meta-ml-green:latest
+          docker rmi ghcr.io/nprakash-star/meta-ml-solver@sha256:f19ff83ec6301ce04db3a1eb6f52f46ba0e65da96a1da53e34e2e78c1c99e732 || true
+          docker rmi ghcr.io/nprakash-star/meta-ml-green@sha256:b3a6336a2fb558372a3249b84e7c6ae0f84e8c1b83cfbb54f65b7bddf5a2c9fb || true
+          # Pull fresh images by digest to force new version
+          docker pull ghcr.io/nprakash-star/meta-ml-green@sha256:b3a6336a2fb558372a3249b84e7c6ae0f84e8c1b83cfbb54f65b7bddf5a2c9fb
+          docker tag ghcr.io/nprakash-star/meta-ml-green@sha256:b3a6336a2fb558372a3249b84e7c6ae0f84e8c1b83cfbb54f65b7bddf5a2c9fb ghcr.io/nprakash-star/meta-ml-green:latest
+          docker pull ghcr.io/nprakash-star/meta-ml-solver@sha256:f19ff83ec6301ce04db3a1eb6f52f46ba0e65da96a1da53e34e2e78c1c99e732
+          docker tag ghcr.io/nprakash-star/meta-ml-solver@sha256:f19ff83ec6301ce04db3a1eb6f52f46ba0e65da96a1da53e34e2e78c1c99e732 ghcr.io/nprakash-star/meta-ml-solver:latest
       
       - name: Create Docker network
         run: docker network create assessment-network
