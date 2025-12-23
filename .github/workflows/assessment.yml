@@ -39,6 +39,7 @@ jobs:
             --network assessment-network \
             -p 9009:9009 \
             -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+            -e AGENT_URL="http://solver:9009/" \
             ghcr.io/nprakash-star/meta-ml-solver:latest
           echo "Waiting for solver to start..."
           sleep 15
